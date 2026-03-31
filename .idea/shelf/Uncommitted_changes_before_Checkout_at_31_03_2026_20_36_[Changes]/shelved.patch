@@ -1,0 +1,194 @@
+Index: tests/test_student_registration.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from data.users import student\r\nfrom pages.registration_page import RegistrationPage\r\n\r\nregistration_page = RegistrationPage()\r\n\r\n\r\ndef test_student_registration():\r\n    registration_page.open()\r\n    registration_page.register(student)\r\n    registration_page.should_have_registered(student)
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/tests/test_student_registration.py b/tests/test_student_registration.py
+--- a/tests/test_student_registration.py	(revision 8b09103de5afcdbfb605fe7812726aa5bb58bf0b)
++++ b/tests/test_student_registration.py	(date 1774978543082)
+@@ -1,10 +1,37 @@
+-from data.users import student
+ from pages.registration_page import RegistrationPage
+ 
++
+ registration_page = RegistrationPage()
+ 
+ 
+ def test_student_registration():
+-    registration_page.open()
+-    registration_page.register(student)
+-    registration_page.should_have_registered(student)
+\ No newline at end of file
++    (
++        registration_page
++        .open()
++        .fill_first_name('Leonid')
++        .fill_last_name('Chaliy')
++        .fill_email('leonid@example.com')
++        .fill_gender('Male')
++        .fill_phone_number('1234567890')
++        .fill_birth_date('28', 'August', 2004)
++        .fill_subject('Maths')
++        .fill_hobby('Sports')
++        .fill_picture('avatar.png')
++        .fill_current_address('Moscow')
++        .fill_state('NCR')
++        .fill_city('Delhi')
++        .submit()
++    )
++
++    registration_page.should_have_registered(
++        ('Student Name', 'Leonid Chaliy'),
++        ('Student Email', 'leonid@example.com'),
++        ('Gender', 'Male'),
++        ('Mobile', '1234567890'),
++        ('Date of Birth', '28 August,2004'),
++        ('Subjects', 'Maths'),
++        ('Hobbies', 'Sports'),
++        ('Picture', 'avatar.png'),
++        ('Address', 'Moscow'),
++        ('State and City', 'NCR Delhi'),
++    )
+\ No newline at end of file
+Index: pages/registration_page.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from selene import browser, have, command\r\n\r\n\r\nclass RegistrationPage:\r\n\r\n    def open(self):\r\n        browser.open('https://demoqa.com/automation-practice-form')\r\n        browser.driver.execute_script(\"document.querySelector('#fixedban')?.remove()\")\r\n        browser.driver.execute_script(\"document.querySelector('footer')?.remove()\")\r\n        return self\r\n\r\n    def register(self, user):\r\n        browser.element('#firstName').type(user.first_name)\r\n        browser.element('#lastName').type(user.last_name)\r\n        browser.element('#userEmail').type(user.email)\r\n\r\n        browser.all('[name=gender]').element_by(have.value(user.gender)).element('..').click()\r\n\r\n        browser.element('#userNumber').type(user.phone_number)\r\n\r\n        browser.element('#dateOfBirthInput').click()\r\n        browser.element('.react-datepicker__month-select').type(user.birth_month)\r\n        browser.element('.react-datepicker__year-select').type(str(user.birth_year))\r\n        browser.element(\r\n            f'.react-datepicker__day--0{user.birth_day}:not(.react-datepicker__day--outside-month)'\r\n        ).click()\r\n\r\n        browser.element('#subjectsInput').type(user.subject).press_enter()\r\n        browser.all('label[for^=\"hobbies-checkbox\"]').element_by(have.exact_text(user.hobby)).click()\r\n        browser.element('#currentAddress').type(user.address)\r\n\r\n        browser.element('#state').perform(command.js.scroll_into_view)\r\n        browser.element('#state').click()\r\n        browser.element('#react-select-3-input').type(user.state).press_enter()\r\n\r\n        browser.element('#city').click()\r\n        browser.element('#react-select-4-input').type(user.city).press_enter()\r\n\r\n        browser.element('#submit').perform(command.js.click)\r\n        return self\r\n\r\n    def should_have_registered(self, user):\r\n        table = browser.element('.table-responsive')\r\n\r\n        table.element('//td[text()=\"Student Name\"]/following-sibling::td').should(\r\n            have.exact_text(f'{user.first_name} {user.last_name}')\r\n        )\r\n        table.element('//td[text()=\"Student Email\"]/following-sibling::td').should(\r\n            have.exact_text(user.email)\r\n        )\r\n        table.element('//td[text()=\"Gender\"]/following-sibling::td').should(\r\n            have.exact_text(user.gender)\r\n        )\r\n        table.element('//td[text()=\"Mobile\"]/following-sibling::td').should(\r\n            have.exact_text(user.phone_number)\r\n        )\r\n        table.element('//td[text()=\"Date of Birth\"]/following-sibling::td').should(\r\n            have.exact_text(f'{user.birth_day} {user.birth_month},{user.birth_year}')\r\n        )\r\n        table.element('//td[text()=\"Subjects\"]/following-sibling::td').should(\r\n            have.exact_text(user.subject)\r\n        )\r\n        table.element('//td[text()=\"Hobbies\"]/following-sibling::td').should(\r\n            have.exact_text(user.hobby)\r\n        )\r\n        table.element('//td[text()=\"Address\"]/following-sibling::td').should(\r\n            have.exact_text(user.address)\r\n        )\r\n        table.element('//td[text()=\"State and City\"]/following-sibling::td').should(\r\n            have.exact_text(f'{user.state} {user.city}')\r\n        )
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/pages/registration_page.py b/pages/registration_page.py
+--- a/pages/registration_page.py	(revision 8b09103de5afcdbfb605fe7812726aa5bb58bf0b)
++++ b/pages/registration_page.py	(date 1774978576927)
+@@ -1,71 +1,81 @@
++import os
++
+ from selene import browser, have, command
+ 
+ 
+ class RegistrationPage:
+ 
+     def open(self):
+-        browser.open('https://demoqa.com/automation-practice-form')
++        browser.open('/automation-practice-form')
+         browser.driver.execute_script("document.querySelector('#fixedban')?.remove()")
+         browser.driver.execute_script("document.querySelector('footer')?.remove()")
+         return self
+ 
+-    def register(self, user):
+-        browser.element('#firstName').type(user.first_name)
+-        browser.element('#lastName').type(user.last_name)
+-        browser.element('#userEmail').type(user.email)
+-
+-        browser.all('[name=gender]').element_by(have.value(user.gender)).element('..').click()
++    def fill_first_name(self, value):
++        browser.element('#firstName').type(value)
++        return self
++
++    def fill_last_name(self, value):
++        browser.element('#lastName').type(value)
++        return self
++
++    def fill_email(self, value):
++        browser.element('#userEmail').type(value)
++        return self
++
++    def fill_gender(self, value):
++        browser.all('[name=gender]').element_by(have.value(value)).element('..').click()
++        return self
++
++    def fill_phone_number(self, value):
++        browser.element('#userNumber').type(value)
++        return self
+ 
+-        browser.element('#userNumber').type(user.phone_number)
+-
++    def fill_birth_date(self, day, month, year):
+         browser.element('#dateOfBirthInput').click()
+-        browser.element('.react-datepicker__month-select').type(user.birth_month)
+-        browser.element('.react-datepicker__year-select').type(str(user.birth_year))
++        browser.element('.react-datepicker__month-select').type(month)
++        browser.element('.react-datepicker__year-select').type(str(year))
+         browser.element(
+-            f'.react-datepicker__day--0{user.birth_day}:not(.react-datepicker__day--outside-month)'
++            f'.react-datepicker__day--0{day}:not(.react-datepicker__day--outside-month)'
+         ).click()
++        return self
++
++    def fill_subject(self, value):
++        browser.element('#subjectsInput').type(value).press_enter()
++        return self
+ 
+-        browser.element('#subjectsInput').type(user.subject).press_enter()
+-        browser.all('label[for^="hobbies-checkbox"]').element_by(have.exact_text(user.hobby)).click()
+-        browser.element('#currentAddress').type(user.address)
++    def fill_hobby(self, value):
++        browser.all('label[for^="hobbies-checkbox"]').element_by(have.exact_text(value)).click()
++        return self
+ 
++    def fill_picture(self, file_name):
++        browser.element('#uploadPicture').send_keys(
++            os.path.abspath(f'resources/{file_name}')
++        )
++        return self
++
++    def fill_current_address(self, value):
++        browser.element('#currentAddress').type(value)
++        return self
++
++    def fill_state(self, value):
+         browser.element('#state').perform(command.js.scroll_into_view)
+         browser.element('#state').click()
+-        browser.element('#react-select-3-input').type(user.state).press_enter()
++        browser.element('#react-select-3-input').type(value).press_enter()
++        return self
+ 
++    def fill_city(self, value):
+         browser.element('#city').click()
+-        browser.element('#react-select-4-input').type(user.city).press_enter()
++        browser.element('#react-select-4-input').type(value).press_enter()
++        return self
+ 
++    def submit(self):
+         browser.element('#submit').perform(command.js.click)
+         return self
+ 
+-    def should_have_registered(self, user):
++    def should_have_registered(self, *rows):
+         table = browser.element('.table-responsive')
+-
+-        table.element('//td[text()="Student Name"]/following-sibling::td').should(
+-            have.exact_text(f'{user.first_name} {user.last_name}')
+-        )
+-        table.element('//td[text()="Student Email"]/following-sibling::td').should(
+-            have.exact_text(user.email)
+-        )
+-        table.element('//td[text()="Gender"]/following-sibling::td').should(
+-            have.exact_text(user.gender)
+-        )
+-        table.element('//td[text()="Mobile"]/following-sibling::td').should(
+-            have.exact_text(user.phone_number)
+-        )
+-        table.element('//td[text()="Date of Birth"]/following-sibling::td').should(
+-            have.exact_text(f'{user.birth_day} {user.birth_month},{user.birth_year}')
+-        )
+-        table.element('//td[text()="Subjects"]/following-sibling::td').should(
+-            have.exact_text(user.subject)
+-        )
+-        table.element('//td[text()="Hobbies"]/following-sibling::td').should(
+-            have.exact_text(user.hobby)
+-        )
+-        table.element('//td[text()="Address"]/following-sibling::td').should(
+-            have.exact_text(user.address)
+-        )
+-        table.element('//td[text()="State and City"]/following-sibling::td').should(
+-            have.exact_text(f'{user.state} {user.city}')
+-        )
+\ No newline at end of file
++        for key, value in rows:
++            table.element(f'//td[text()="{key}"]/following-sibling::td').should(
++                have.exact_text(value)
++            )
+\ No newline at end of file

@@ -1,0 +1,74 @@
+Index: tests/test_student_registration.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from data.users import student\r\nfrom pages.registration_page import RegistrationPage\r\n\r\nregistration_page = RegistrationPage()\r\n\r\n\r\ndef test_student_registration():\r\n    registration_page.open()\r\n    registration_page.register(student)\r\n    registration_page.should_have_registered(student)
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/tests/test_student_registration.py b/tests/test_student_registration.py
+--- a/tests/test_student_registration.py	(revision c6d05fe4cc2902445c5d74742dce414764cca228)
++++ b/tests/test_student_registration.py	(date 1774976145718)
+@@ -1,10 +1,36 @@
+-from data.users import student
+ from pages.registration_page import RegistrationPage
+ 
+ registration_page = RegistrationPage()
+ 
+ 
+ def test_student_registration():
+-    registration_page.open()
+-    registration_page.register(student)
+-    registration_page.should_have_registered(student)
+\ No newline at end of file
++    (
++        registration_page
++        .open()
++        .fill_first_name('Leonid')
++        .fill_last_name('Chaliy')
++        .fill_email('leonid@example.com')
++        .fill_gender('Male')
++        .fill_phone_number('1234567890')
++        .fill_birth_date('28', 'August', 2004)
++        .fill_subject('Maths')
++        .fill_hobby('Sports')
++        .fill_picture('avatar.png')
++        .fill_current_address('Moscow')
++        .fill_state('NCR')
++        .fill_city('Delhi')
++        .submit()
++    )
++
++    registration_page.should_have_registered(
++        ('Student Name', 'Leonid Chaliy'),
++        ('Student Email', 'leonid@example.com'),
++        ('Gender', 'Male'),
++        ('Mobile', '1234567890'),
++        ('Date of Birth', '28 August,2004'),
++        ('Subjects', 'Maths'),
++        ('Hobbies', 'Sports'),
++        ('Picture', 'avatar.png'),
++        ('Address', 'Moscow'),
++        ('State and City', 'NCR Delhi'),
++    )
+\ No newline at end of file
+Index: resources/avatar.png.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/resources/avatar.png.py b/resources/avatar.png.py
+new file mode 100644
+--- /dev/null	(date 1774975542060)
++++ b/resources/avatar.png.py	(date 1774975542060)
+@@ -0,0 +1,10 @@
++import os
++
++from selene import browser
++
++
++def fill_picture(self, file_name):
++    browser.element('#uploadPicture').send_keys(
++        os.path.abspath(f'resources/{file_name}')
++    )
++    return self
+\ No newline at end of file
