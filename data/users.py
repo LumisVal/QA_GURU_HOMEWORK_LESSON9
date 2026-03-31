@@ -11,6 +11,7 @@ student = User(
     birth_year=2004,
     subject='Maths',
     hobby='Sports',
+    picture='avatar.png',
     address='Moscow',
     state='NCR',
     city='Delhi',

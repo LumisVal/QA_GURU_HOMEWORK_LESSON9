@@ -13,6 +13,7 @@ class User:
     birth_year: int
     subject: str
     hobby: str
+    picture: str
     address: str
     state: str
     city: str
