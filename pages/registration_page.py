@@ -1,5 +1,6 @@
 from selene import browser, have, command
 
+browser.open('/automation-practice-form')
 
 class RegistrationPage:
 
